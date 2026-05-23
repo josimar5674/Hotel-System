@@ -57,7 +57,7 @@
 
                 @csrf
 
-                <div class="grid grid-cols-3 gap-4">
+                <div class="grid grid-cols-4 gap-4">
 
                     <div>
 
@@ -85,6 +85,47 @@
                         </select>
 
                     </div>
+
+                    <div>
+
+    <label class="block mb-1">
+
+        Descuento
+
+    </label>
+
+    <select name="descuento_id"
+            class="w-full border rounded p-2">
+
+        <option value="">
+            Sin descuento
+        </option>
+
+        @foreach($descuentos as $descuento)
+
+            <option value="{{ $descuento->id }}">
+
+                {{ $descuento->nombre }}
+
+                -
+
+                @if($descuento->tipo == 'porcentaje')
+
+                    {{ $descuento->valor }}%
+
+                @else
+
+                    L. {{ number_format($descuento->valor, 2) }}
+
+                @endif
+
+            </option>
+
+        @endforeach
+
+    </select>
+
+</div>
 
 
                     <div>
@@ -129,88 +170,200 @@
             </h3>
 
 
-            <table class="w-full border">
+            <table class="w-full border text-sm">
 
-                <thead>
+    <thead>
 
-                    <tr class="bg-gray-200">
+        <tr class="bg-gray-200 text-center">
 
-                        <th class="p-2">
-                            Extra
-                        </th>
+            <th class="p-3 border">
+                Extra
+            </th>
 
-                        <th class="p-2">
-                            Cantidad
-                        </th>
+            <th class="p-3 border">
+                Cantidad
+            </th>
 
-                        <th class="p-2">
-                            Precio
-                        </th>
+            <th class="p-3 border">
+                Precio Unitario
+            </th>
 
-                        <th class="p-2">
-                            Total
-                        </th>
+            <th class="p-3 border">
+                Subtotal
+            </th>
 
-                    </tr>
+            <th class="p-3 border">
+                Descuento
+            </th>
 
-                </thead>
+            <th class="p-3 border">
+                Total Final
+            </th>
 
-                <tbody>
+            <th class="p-3 border">
 
-                    @forelse($reserva->extras as $extra)
+    Acción
 
-                    <tr class="border-t">
+</th>
 
-                        <td class="p-2">
+        </tr>
 
-                            {{ $extra->nombre }}
+    </thead>
 
-                        </td>
+    <tbody>
 
-                        <td class="p-2">
+        @forelse($reserva->extras as $extra)
 
-                            {{ $extra->pivot->cantidad }}
+        @php
 
-                        </td>
+            $subtotal = (
 
-                        <td class="p-2">
+                $extra->pivot->cantidad *
 
-                            L. {{ number_format($extra->pivot->precio, 2) }}
+                $extra->pivot->precio
 
-                        </td>
+            );
 
-                        <td class="p-2">
+            $descuento = (
+                $extra->pivot->descuento_monto ?? 0
+            );
 
-                            L.
+            $totalFinal = (
+                $subtotal - $descuento
+            );
 
-                            {{ number_format(
-                                $extra->pivot->cantidad *
-                                $extra->pivot->precio,
-                                2
-                            ) }}
+        @endphp
 
-                        </td>
+        <tr class="border-t text-center">
 
-                    </tr>
+            <!-- EXTRA -->
 
-                    @empty
+            <td class="p-3 border">
 
-                    <tr>
+                {{ $extra->nombre }}
 
-                        <td colspan="4"
-                            class="p-4 text-center text-gray-500">
+            </td>
 
-                            Sin extras agregados
 
-                        </td>
+            <!-- CANTIDAD -->
 
-                    </tr>
+            <td class="p-3 border">
 
-                    @endforelse
+                {{ $extra->pivot->cantidad }}
 
-                </tbody>
+            </td>
 
-            </table>
+
+            <!-- PRECIO -->
+
+            <td class="p-3 border">
+
+                L.
+
+                {{ number_format(
+                    $extra->pivot->precio,
+                    2
+                ) }}
+
+            </td>
+
+
+            <!-- SUBTOTAL -->
+
+            <td class="p-3 border">
+
+                L.
+
+                {{ number_format(
+                    $subtotal,
+                    2
+                ) }}
+
+            </td>
+
+
+            <!-- DESCUENTO -->
+
+            <td class="p-3 border">
+
+                @if($descuento > 0)
+
+                    <span class="text-red-600 font-bold">
+
+                        - L.
+
+                        {{ number_format(
+                            $descuento,
+                            2
+                        ) }}
+
+                    </span>
+
+                @else
+
+                    —
+
+                @endif
+
+            </td>
+
+
+            <!-- TOTAL FINAL -->
+
+            <td class="p-3 border font-bold text-green-700">
+
+                L.
+
+                {{ number_format(
+                    $totalFinal,
+                    2
+                ) }}
+
+            </td>
+
+<td class="p-2 text-center">
+
+    <form method="POST"
+          action="{{ route(
+              'reservas.extras.destroy',
+              $extra->pivot->id
+          ) }}">
+
+        @csrf
+        @method('DELETE')
+
+        <button type="submit"
+                onclick="return confirm('¿Eliminar extra?')"
+                class="bg-red-500 text-white px-2 py-1 rounded text-xs">
+
+            Eliminar
+
+        </button>
+
+    </form>
+
+</td>
+
+        </tr>
+
+        @empty
+
+        <tr>
+
+            <td colspan="6"
+                class="p-6 text-center text-gray-500">
+
+                Sin extras agregados
+
+            </td>
+
+        </tr>
+
+        @endforelse
+
+    </tbody>
+
+</table>
 
 
             <div class="mt-6">

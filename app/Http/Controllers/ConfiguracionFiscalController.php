@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\ConfiguracionFiscal;
 use App\Models\FormaPago;
 use App\Models\Extra;
+use App\Models\Descuento;
 
 
 class ConfiguracionFiscalController extends Controller
@@ -32,57 +33,75 @@ class ConfiguracionFiscalController extends Controller
 
         $formasPago = FormaPago::all();
         $extras = Extra::all();
+        $descuentos = Descuento::all();
 
        return view(
     'configuracion-fiscal.edit',
     compact(
         'config',
         'formasPago',
-        'extras'
+        'extras',
+        'descuentos'
     )
 );
     }
 
 
-    public function update(Request $request)
-    {
-        $config = ConfiguracionFiscal::first();
+   public function update(Request $request)
+{
+    $config = ConfiguracionFiscal::first();
 
-        $config->update([
+    $config->update([
 
-            'nombre_negocio' => $request->nombre_negocio,
+        'nombre_negocio' => $request->nombre_negocio,
 
-            'razon_social' => $request->razon_social,
+        'razon_social' => $request->razon_social,
 
-            'rtn' => $request->rtn,
+        'rtn' => $request->rtn,
 
-            'direccion' => $request->direccion,
+        'direccion' => $request->direccion,
 
-            'telefono' => $request->telefono,
+        'telefono' => $request->telefono,
 
-            'correo' => $request->correo,
+        'correo' => $request->correo,
 
-            'cai' => $request->cai,
+        'cai' => $request->cai,
 
-            'factura_inicio' => $request->factura_inicio,
+        'factura_inicio' => $request->factura_inicio,
 
-            'factura_fin' => $request->factura_fin,
+        'factura_fin' => $request->factura_fin,
 
-            'siguiente_numero' => $request->siguiente_numero,
+        'siguiente_numero' => $request->siguiente_numero,
 
-            'fecha_limite' => $request->fecha_limite,
+        'fecha_limite' => $request->fecha_limite,
 
-            'impuesto_15' => $request->impuesto_15,
+        'impuesto_15' => $request->impuesto_15,
 
-            'impuesto_18' => $request->impuesto_18,
+        'impuesto_18' => $request->impuesto_18,
 
-            'impuesto_turismo' => $request->impuesto_turismo,
-            'serie' => $request->serie,
-        ]);
+        'impuesto_turismo' => $request->impuesto_turismo,
 
-        return back()->with(
-            'success',
-            'Configuración fiscal actualizada'
-        );
+        'serie' => $request->serie,
+
+    ]);
+
+
+    // SUBIR LOGO
+
+    if($request->hasFile('logo')) {
+
+        $logo = $request->file('logo')
+            ->store('logos', 'public');
+
+        $config->logo = $logo;
+
+        $config->save();
     }
+
+
+    return back()->with(
+        'success',
+        'Configuración fiscal actualizada'
+    );
+}
 }

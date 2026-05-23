@@ -12,7 +12,7 @@ use App\Http\Controllers\FacturaController;
 use App\Http\Controllers\FormaPagoController;
 use App\Http\Controllers\ExtraController;
 use App\Http\Controllers\UsuarioController;
-
+use App\Http\Controllers\DescuentoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -232,7 +232,42 @@ Route::middleware([
         UsuarioController::class
     );
 
+    // DESCUENTOS
+
+Route::post(
+    '/descuentos',
+    [DescuentoController::class, 'store']
+)->name('descuentos.store');
+
+
+Route::put(
+    '/descuentos/{descuento}',
+    [DescuentoController::class, 'update']
+)->name('descuentos.update');
+
+
+Route::post(
+    '/descuentos/{descuento}/toggle',
+    [DescuentoController::class, 'toggle']
+)->name('descuentos.toggle');
+
+
+Route::delete(
+    '/reservas/extras/{pivotId}',
+    [ReservaController::class, 'destroyExtra']
+)->name('reservas.extras.destroy');
+
 });
+
+Route::get(
+    '/reservas/{reserva}/registro-huesped',
+    [ReservaController::class, 'registroHuespedPdf']
+)->name('reservas.registro-huesped');
+
+
+
 
 
 require __DIR__.'/auth.php';
+
+

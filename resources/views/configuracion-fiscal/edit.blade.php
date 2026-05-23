@@ -18,8 +18,9 @@
 
         <div class="bg-white shadow rounded-lg p-6">
 
-            <form method="POST"
-                action="{{ route('configuracion-fiscal.update') }}">
+       <form method="POST"
+    action="{{ route('configuracion-fiscal.update') }}"
+    enctype="multipart/form-data">
 
                 @csrf
                 @method('PUT')
@@ -163,6 +164,29 @@
                             value="{{ $config->impuesto_turismo }}"
                             class="w-full border rounded p-2">
                     </div>
+
+                    <div>
+
+    <label>Logo del Hotel</label>
+
+    <input type="file"
+           name="logo"
+           class="w-full border rounded p-2">
+
+    @if($config->logo)
+
+    <div class="mt-2">
+
+        <img src="{{ asset(
+            'storage/' . $config->logo
+        ) }}"
+        class="h-20 object-contain border rounded p-2">
+
+    </div>
+
+    @endif
+
+</div>
 
                 </div>
 
@@ -379,6 +403,158 @@
         </div>
 
     </div>
+
+    <!-- DESCUENTOS -->
+
+<div>
+
+    <h2 class="text-lg font-bold mb-4">
+        Descuentos
+    </h2>
+
+
+    <!-- NUEVO DESCUENTO -->
+
+    <form method="POST"
+          action="{{ route('descuentos.store') }}"
+          class="flex gap-2 mb-4">
+
+        @csrf
+
+        <input type="text"
+               name="nombre"
+               placeholder="Nombre descuento"
+               class="border rounded px-2 py-1 w-full text-sm">
+
+
+        <!-- TIPO -->
+
+        <select name="tipo"
+                class="border rounded px-2 py-1 text-sm w-40">
+
+            <option value="porcentaje">
+                %
+            </option>
+
+            <option value="fijo">
+                Lempiras
+            </option>
+
+        </select>
+
+
+        <!-- VALOR -->
+
+        <input type="number"
+               step="0.01"
+               name="valor"
+               placeholder="Valor"
+               class="border rounded px-2 py-1 w-28 text-sm">
+
+
+        <button type="submit"
+                class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">
+
+            Agregar
+
+        </button>
+
+    </form>
+
+
+    <!-- LISTADO -->
+
+    <div class="space-y-2">
+
+        @foreach($descuentos as $descuento)
+
+        <div class="flex items-center gap-2 border rounded p-2">
+
+            <!-- EDITAR -->
+
+            <form method="POST"
+                  action="{{ route('descuentos.update', $descuento->id) }}"
+                  class="flex items-center gap-2 w-full">
+
+                @csrf
+                @method('PUT')
+
+
+                <input type="text"
+                       name="nombre"
+                       value="{{ $descuento->nombre }}"
+                       class="border rounded px-2 py-1 w-full text-sm">
+
+
+                <select name="tipo"
+                        class="border rounded px-2 py-1 text-sm w-40">
+
+                    <option value="porcentaje"
+                        {{ $descuento->tipo == 'porcentaje'
+                            ? 'selected'
+                            : '' }}>
+
+                        %
+
+                    </option>
+
+                    <option value="fijo"
+                        {{ $descuento->tipo == 'fijo'
+                            ? 'selected'
+                            : '' }}>
+
+                        Lempiras
+
+                    </option>
+
+                </select>
+
+
+                <input type="number"
+                       step="0.01"
+                       name="valor"
+                       value="{{ $descuento->valor }}"
+                       class="border rounded px-2 py-1 w-28 text-sm">
+
+
+                <button type="submit"
+                        class="bg-yellow-500 text-white px-2 py-1 rounded text-xs">
+
+                    Actualizar
+
+                </button>
+
+            </form>
+
+
+            <!-- TOGGLE -->
+
+            <form method="POST"
+                  action="{{ route('descuentos.toggle', $descuento->id) }}">
+
+                @csrf
+
+                <button type="submit"
+                        class="px-2 py-1 rounded text-white text-xs
+                        {{ $descuento->activo
+                            ? 'bg-red-500'
+                            : 'bg-green-500' }}">
+
+                    {{ $descuento->activo
+                        ? 'OFF'
+                        : 'ON' }}
+
+                </button>
+
+            </form>
+
+        </div>
+
+        @endforeach
+
+    </div>
+
+</div>
 
 </div>
 

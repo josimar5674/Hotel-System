@@ -13,25 +13,40 @@ class FacturaController extends Controller
         $config = ConfiguracionFiscal::first();
 
         $factura->load([
+
             'cliente',
+
             'reserva.habitacion',
+
+            'reserva.extras',
+
             'usuario'
+
         ]);
+$pdf = Pdf::loadView(
+    'facturas.pdf',
+    compact(
+        'factura',
+        'config'
+    )
+);
 
+// TAMAÑO TICKET TÉRMICO
 
-        $pdf = Pdf::loadView(
-            'facturas.pdf',
-            compact(
-                'factura',
-                'config'
-            )
-        );
+$pdf->setPaper(
+    [0, 0, 226.77, 1200],
+    'portrait'
+);
 
 
         return $pdf->stream(
+
             'factura-' .
+
             $factura->numero_factura .
+
             '.pdf'
+
         );
     }
 }

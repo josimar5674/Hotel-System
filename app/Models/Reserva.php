@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ReservaHuesped;
+
 
 class Reserva extends Model
 {
@@ -22,9 +24,11 @@ class Reserva extends Model
         'fecha_checkin',
         'fecha_checkout',
         'usuario_checkin_id',
-'usuario_checkout_id',
+        'usuario_checkout_id',
+        'huespedes',
 
     ];
+
 
     public function cliente()
     {
@@ -37,36 +41,55 @@ class Reserva extends Model
     }
 
     public function usuarioCheckin()
-{
-    return $this->belongsTo(
-        User::class,
-        'usuario_checkin_id'
-    );
-}
+    {
+        return $this->belongsTo(
+            User::class,
+            'usuario_checkin_id'
+        );
+    }
 
-public function usuarioCheckout()
-{
-    return $this->belongsTo(
-        User::class,
-        'usuario_checkout_id'
-    );
-}
+    public function usuarioCheckout()
+    {
+        return $this->belongsTo(
+            User::class,
+            'usuario_checkout_id'
+        );
+    }
 
+    public function factura()
+    {
+        return $this->hasOne(Factura::class);
+    }
 
-public function factura()
-{
-    return $this->hasOne(Factura::class);
-}
 public function extras()
 {
     return $this->belongsToMany(
         Extra::class
     )
     ->withPivot([
+
+        'id',
+
         'cantidad',
-        'precio'
+
+        'precio',
+
+        'descuento_id',
+
+        'descuento_monto'
+
     ])
     ->withTimestamps();
 }
+
+
+public function huespedes()
+{
+    return $this->hasMany(
+        ReservaHuesped::class,
+        'reserva_id'
+    );
+}
+
 
 }

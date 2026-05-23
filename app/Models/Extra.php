@@ -17,14 +17,23 @@ class Extra extends Model
     ];
 
     public function reservas()
-{
-    return $this->belongsToMany(
-        Reserva::class
-    )
-    ->withPivot([
-        'cantidad',
-        'precio'
-    ])
-    ->withTimestamps();
-}
+    {
+        return $this->belongsToMany(
+            Reserva::class
+        )
+        ->withPivot([
+
+            'id',
+
+            'cantidad',
+
+            'precio',
+
+            'descuento_id',
+
+            'descuento_monto'
+
+        ])
+        ->withTimestamps();
+    }
 }

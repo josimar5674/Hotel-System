@@ -40,6 +40,18 @@
 
         </div>
 
+        {{-- CALENDARIO RESERVAS --}}
+
+<div class="bg-white shadow rounded-lg p-4 mb-8">
+
+    <h3 class="text-lg font-bold mb-4">
+        Calendario de Ocupación
+    </h3>
+
+    <div id="calendar"></div>
+
+</div>
+
 
         {{-- RESERVAS ACTIVAS --}}
 
@@ -59,10 +71,13 @@
 
                         <th class="p-2 text-center">Habitación</th>
 
-                        <th class="p-2 text-center">Entrada</th>            
+                        <th class="p-2 text-center">Entrada</th>
                         <th class="p-2 text-center">Salida</th>
 
-                        <th class="p-2 text-center">Noches</th>
+                        <th class="p-2 text-center">Personas/Noches</th>
+                        <th class="p-2 text-center">
+                            Descuentos
+                        </th>
 
                         <th class="p-2 text-center">Total</th>
                         <th class="p-2 text-center">Estado</th>
@@ -107,24 +122,88 @@
                         </td>
 
                         <td class="p-2 text-center">
-                            {{ $noches }}
+                            {{ $reserva->cantidad_personas }}
+
+                            Personas
+
+                            /
+
+                            {{ $reserva->noches }} Noches
+
+
+                        </td>
+                        <td class="p-2 text-center">
+
+                          @php
+
+// DESCUENTOS HABITACIÓN
+
+$descuentosHabitacion = DB::table(
+    'reserva_huespedes'
+)
+->where('reserva_id', $reserva->id)
+->sum('descuento_monto');
+
+$descuentosHabitacion = (
+    $descuentosHabitacion *
+    $reserva->noches
+);
+
+
+// DESCUENTOS EXTRAS
+
+$descuentosExtras = 0;
+
+foreach($reserva->extras as $extra) {
+
+    $descuentosExtras += (
+
+        ($extra->pivot->descuento_monto ?? 0)
+
+        *
+
+        $extra->pivot->cantidad
+
+    );
+
+}
+
+
+// TOTAL DESCUENTOS
+
+$totalDescuentos = (
+    $descuentosHabitacion +
+    $descuentosExtras
+);
+
+@endphp
+
+                            <span class="text-red-600 font-bold">
+
+                                - L. {{ number_format(
+            $totalDescuentos,
+            2
+        ) }}
+
+                            </span>
+
                         </td>
 
-                   <td class="p-2 text-center align-middle">
+                        <td class="p-2 text-center align-middle">
 
-    L. {{ number_format(
+                            L. {{ number_format(
         $reserva->total_factura,
         2
     ) }}
 
-</td>
+                        </td>
 
                         <td class="p-2 text-center">
                             {{ $reserva->estado }}
                         </td>
 
                         <td class="p-2 text-center">
-                           <div class="flex justify-center items-center gap-2 flex-wrap">
+                            <div class="flex justify-center items-center gap-2 flex-wrap">
 
                                 @if($reserva->estado == 'reservada')
 
@@ -182,22 +261,29 @@
 
                                 <button
                                     type="button"
-
                                     onclick='abrirModalCheckout(
 
-                                    {{ $reserva->id }},
+    {{ $reserva->id }},
 
-                                    {{ $reserva->subtotal_factura }},
+    {{ $reserva->subtotal_factura }},
 
-                                    {{ $reserva->impuesto_15 }},
+    {{ $reserva->impuesto_15 }},
 
-                                    {{ $reserva->impuesto_turismo }},
+    {{ $reserva->impuesto_turismo }},
 
-                                    {{ $reserva->total_factura }},
+    {{ $reserva->total_factura }},
 
-                                    @json($reserva->extras)
+    {{ $reserva->habitacion->precio }},
 
-                                )'
+    {{ $noches }},
+
+{{ DB::table("reserva_huespedes")
+    ->where("reserva_id", $reserva->id)
+    ->sum("descuento_monto") * $noches }},
+
+    @json($reserva->extras)
+
+)'
 
                                     class="bg-blue-600 text-white px-3 py-1 rounded">
 
@@ -233,12 +319,12 @@
 
             <div class="mb-4">
 
-    <input type="text"
-           id="buscarHistorial"
-           placeholder="Buscar en historial..."
-           class="w-full border rounded p-2">
+                <input type="text"
+                    id="buscarHistorial"
+                    placeholder="Buscar en historial..."
+                    class="w-full border rounded p-2">
 
-</div>
+            </div>
 
             <table class="w-full border">
 
@@ -271,21 +357,24 @@
 
                 </thead>
 
-        <tbody id="tablaHistorial">
+                <tbody id="tablaHistorial">
 
                     @foreach($reservasHistorial as $reserva)
 
-                    @php
+                @php
 
-                    $entrada = \Carbon\Carbon::parse($reserva->fecha_entrada);
+$entrada = \Carbon\Carbon::parse($reserva->fecha_entrada);
 
-                    $salida = \Carbon\Carbon::parse($reserva->fecha_salida);
+$salida = \Carbon\Carbon::parse($reserva->fecha_salida);
 
-                    $noches = $entrada->diffInDays($salida);
+$noches = $entrada->diffInDays($salida);
 
-                    $total = $noches * $reserva->habitacion->precio;
 
-                    @endphp
+// TOTAL FACTURA REAL
+
+$total = $reserva->factura->total ?? 0;
+
+@endphp
 
                     <tr class="border-t">
 
@@ -331,17 +420,33 @@
 
                         <td class="p-2">
 
-                            @if($reserva->factura)
+                            <div class="flex gap-2">
 
-                            <a href="{{ route('facturas.pdf', $reserva->factura->id) }}"
-                                target="_blank"
-                                class="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1 w-fit">
+                                @if($reserva->factura)
 
-                                🖨️ PDF
+                                <a href="{{ route('facturas.pdf', $reserva->factura->id) }}"
+                                    target="_blank"
+                                    class="bg-red-500 text-white px-3 py-1 rounded flex items-center gap-1 w-fit">
 
-                            </a>
+                                    🖨️ PDF
 
-                            @endif
+                                </a>
+
+                                @endif
+
+
+                                <a href="{{ route(
+            'reservas.registro-huesped',
+            $reserva->id
+        ) }}"
+                                    target="_blank"
+                                    class="bg-gray-700 text-white px-3 py-1 rounded flex items-center gap-1 w-fit">
+
+                                    🧾 Registro
+
+                                </a>
+
+                            </div>
 
                         </td>
 
@@ -352,11 +457,11 @@
                 </tbody>
 
             </table>
-<div class="mt-4">
+            <div class="mt-4">
 
-    {{ $reservasHistorial->links() }}
+                {{ $reservasHistorial->links() }}
 
-</div>
+            </div>
         </div>
 
     </div>
@@ -380,47 +485,6 @@
 
                 </div>
 
-                <div class="flex justify-between">
-
-                    <span>Subtotal:</span>
-
-                    <span id="subtotalTexto">
-                        L. 0.00
-                    </span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span>ISV:</span>
-
-                    <span id="isvTexto">
-                        L. 0.00
-                    </span>
-
-                </div>
-
-                <div class="flex justify-between">
-
-                    <span>Impuesto Turismo:</span>
-
-                    <span id="turismoTexto">
-                        L. 0.00
-                    </span>
-
-                </div>
-
-                <hr class="my-2">
-
-                <div class="flex justify-between font-bold text-lg">
-
-                    <span>TOTAL:</span>
-
-                    <span id="totalFacturaTexto">
-                        L. 0.00
-                    </span>
-
-                </div>
 
             </div>
 
@@ -537,6 +601,9 @@
     </div>
 
 
+
+
+
     <script>
         let totalFactura = 0;
 
@@ -546,6 +613,9 @@
             isv,
             turismo,
             total,
+            precioHabitacion,
+            noches,
+            totalDescuentos,
             extras
         ) {
             totalFactura = parseFloat(total);
@@ -561,65 +631,188 @@
             form.action = '/reservas/' + id + '/checkout';
 
 
-            // Mostrar valores
-
-            document.getElementById('subtotalTexto')
-                .innerText = 'L. ' + parseFloat(subtotal).toFixed(2);
-
-            document.getElementById('isvTexto')
-                .innerText = 'L. ' + parseFloat(isv).toFixed(2);
-
-            document.getElementById('turismoTexto')
-                .innerText = 'L. ' + parseFloat(turismo).toFixed(2);
-
-            document.getElementById('totalFacturaTexto')
-                .innerText = 'L. ' + parseFloat(total).toFixed(2);
+           
 
 
-            // Mostrar extras
+// =====================================
+// DETALLE FACTURA
+// =====================================
 
-            const extrasContainer = document.getElementById(
-                'extrasContainer'
-            );
+const extrasContainer = document.getElementById(
+    'extrasContainer'
+);
 
-            extrasContainer.innerHTML = '';
+extrasContainer.innerHTML = '';
 
 
-            if (extras.length > 0) {
+// ================================
+// HABITACIÓN
+// ================================
 
-                extras.forEach(extra => {
+const totalHabitacion = (
+    precioHabitacion * noches
+);
 
-                    const totalExtra = (
+extrasContainer.innerHTML += `
 
-                        extra.pivot.cantidad *
+<div class="border-b pb-2 mb-2">
 
-                        extra.pivot.precio
+    <div class="flex justify-between text-sm font-semibold">
 
-                    );
+        <span>
+            🛏️ Habitación (${noches} noche${noches > 1 ? 's' : ''})
+        </span>
 
-                    extrasContainer.innerHTML += `
+        <span>
+            L. ${totalHabitacion.toFixed(2)}
+        </span>
 
-                <div class="flex justify-between text-sm">
+    </div>
 
-                    <span>
+</div>
 
-                        ${extra.nombre}
-                        x${extra.pivot.cantidad}
+`;
 
-                    </span>
 
-                    <span>
+// ================================
+// EXTRAS
+// ================================
 
-                        L. ${totalExtra.toFixed(2)}
+let totalDescuentosExtras = 0;
 
-                    </span>
+if (extras.length > 0) {
 
-                </div>
+    extrasContainer.innerHTML += `
 
-            `;
-                });
+    <div class="text-sm font-bold mt-2 mb-2">
 
-            }
+        Extras
+
+    </div>
+
+    `;
+
+    extras.forEach(extra => {
+
+        const subtotalExtra = (
+            extra.pivot.cantidad *
+            extra.pivot.precio
+        );
+
+        const descuentoExtra = (
+            extra.pivot.descuento_monto || 0
+        ) * extra.pivot.cantidad;
+
+        const totalExtra = (
+            subtotalExtra -
+            descuentoExtra
+        );
+
+        totalDescuentosExtras += descuentoExtra;
+
+        extrasContainer.innerHTML += `
+
+        <div class="flex justify-between text-sm">
+
+            <span>
+                ${extra.nombre}
+                x${extra.pivot.cantidad}
+            </span>
+
+            <span>
+                L. ${totalExtra.toFixed(2)}
+            </span>
+
+        </div>
+
+        `;
+
+    });
+
+}
+
+
+// ================================
+// TOTAL DESCUENTOS
+// ================================
+
+const descuentosTotales = (
+    parseFloat(totalDescuentos) +
+    totalDescuentosExtras
+);
+
+if (descuentosTotales > 0) {
+
+    extrasContainer.innerHTML += `
+
+    <div class="flex justify-between text-sm text-red-600 font-bold border-t pt-2 mt-3">
+
+        <span>
+            💸 Total Descuentos
+        </span>
+
+        <span>
+            - L. ${descuentosTotales.toFixed(2)}
+        </span>
+
+    </div>
+
+    `;
+
+}
+
+
+// ================================
+// RESUMEN FACTURA
+// ================================
+
+extrasContainer.innerHTML += `
+
+<div class="border-t mt-3 pt-3 space-y-1">
+
+    <div class="flex justify-between text-sm">
+
+        <span>Subtotal:</span>
+
+        <span>
+            L. ${parseFloat(subtotal).toFixed(2)}
+        </span>
+
+    </div>
+
+    <div class="flex justify-between text-sm">
+
+        <span>ISV:</span>
+
+        <span>
+            L. ${parseFloat(isv).toFixed(2)}
+        </span>
+
+    </div>
+
+    <div class="flex justify-between text-sm">
+
+        <span>Impuesto Turismo:</span>
+
+        <span>
+            L. ${parseFloat(turismo).toFixed(2)}
+        </span>
+
+    </div>
+
+    <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+
+        <span>TOTAL FINAL:</span>
+
+        <span>
+            L. ${parseFloat(total).toFixed(2)}
+        </span>
+
+    </div>
+
+</div>
+
+`;
 
 
             // Limpiar mensajes
@@ -818,37 +1011,75 @@
 
             });
 
-            // BUSCADOR HISTORIAL
+        // BUSCADOR HISTORIAL
 
-document.getElementById('buscarHistorial')
-.addEventListener('keyup', function() {
+        document.getElementById('buscarHistorial')
+            .addEventListener('keyup', function() {
 
-    const filtro = this.value.toLowerCase();
+                const filtro = this.value.toLowerCase();
 
-    const filas = document.querySelectorAll(
-        '#tablaHistorial tr'
-    );
+                const filas = document.querySelectorAll(
+                    '#tablaHistorial tr'
+                );
 
-    filas.forEach(fila => {
+                filas.forEach(fila => {
 
-        const texto = fila.innerText
-            .toLowerCase();
+                    const texto = fila.innerText
+                        .toLowerCase();
 
-        if(texto.includes(filtro)) {
+                    if (texto.includes(filtro)) {
 
-            fila.style.display = '';
+                        fila.style.display = '';
 
-        }
+                    } else {
 
-        else {
+                        fila.style.display = 'none';
 
-            fila.style.display = 'none';
+                    }
 
-        }
+                });
 
-    });
+            });
+    </script>
+
+    <script>
+
+document.addEventListener('DOMContentLoaded', function () {
+
+    const calendarEl = document.getElementById('calendar');
+
+const calendar = new FullCalendar.Calendar(calendarEl, {
+
+    initialView: 'dayGridMonth',
+
+    locale: 'es',
+
+    height: 500,
+
+    contentHeight: 450,
+
+    aspectRatio: 1.8,
+
+    events: @json($eventosCalendario),
+
+    eventDisplay: 'block',
+
+    headerToolbar: {
+
+        left: 'prev,next today',
+
+        center: 'title',
+
+        right: 'dayGridMonth,timeGridWeek'
+
+    }
 
 });
-    </script>
+
+    calendar.render();
+
+});
+
+</script>
 
 </x-app-layout>
