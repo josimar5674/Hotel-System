@@ -10,24 +10,34 @@
 
         {{-- ERRORES --}}
 
-        @if ($errors->any())
+ @if(session('error'))
 
-        <div class="bg-red-500 text-white p-4 rounded mb-4">
+    <div class="bg-red-500 text-white p-4 rounded mb-4">
 
-            <ul class="list-disc pl-5">
+        {{ session('error') }}
 
-                @foreach ($errors->all() as $error)
+    </div>
 
-                    <li>{{ $error }}</li>
+@endif
 
-                @endforeach
 
-            </ul>
+@if ($errors->any())
 
-        </div>
+    <div class="bg-red-500 text-white p-4 rounded mb-4">
 
-        @endif
+        <ul class="list-disc pl-5">
 
+            @foreach ($errors->all() as $error)
+
+                <li>{{ $error }}</li>
+
+            @endforeach
+
+        </ul>
+
+    </div>
+
+@endif
 
         <div class="bg-white shadow rounded-lg p-6">
 

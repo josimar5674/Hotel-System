@@ -451,13 +451,10 @@
                placeholder="Valor"
                class="border rounded px-2 py-1 w-28 text-sm">
 
-
-        <button type="submit"
-                class="bg-indigo-600 text-white px-3 py-1 rounded text-sm">
-
-            Agregar
-
-        </button>
+<button type="submit"
+        class="bg-indigo-600 text-white px-3 py-1 rounded text-sm border border-black">
+    Agregar
+</button>
 
     </form>
 
