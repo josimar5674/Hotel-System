@@ -7,221 +7,333 @@
 
 <style>
 
-    @page {
+   @page {
+    size: letter;
+    margin: 30px;
+}
 
-        margin: 10px;
+body {
+    font-family: DejaVu Sans, sans-serif;
+    font-size: 12px;
+    color: #222;
+}
 
-    }
+.watermark {
 
-    body {
+    position: fixed;
 
-        font-family: monospace;
+    top: 20%;
 
-        font-size: 11px;
+    left: 10%;
 
-width: 100%;
+    width: 80%;
 
-        color: #000;
+    text-align: center;
 
-    }
+    opacity: 0.06;
 
-    h2, h3, p {
+    z-index: -1;
+}
 
-        margin: 2px 0;
+.watermark img {
 
-    }
+    width: 450px;
+}
 
-    .center {
+.header-table {
 
-        text-align: center;
+    width: 100%;
+    margin-bottom: 20px;
+}
 
-    }
+.logo {
 
-    .mb {
+    width: 120px;
+}
 
-        margin-bottom: 10px;
+.empresa {
 
-    }
+    text-align: center;
+}
 
-    .linea {
+.empresa h2 {
 
-        border-top: 1px dashed #000;
+    margin: 0;
+    font-size: 22px;
+}
 
-        margin: 6px 0;
+.empresa p {
 
-    }
+    margin: 2px 0;
+}
 
-    table {
+.box {
 
-        width: 100%;
+    border: 1px solid #ccc;
 
-        border-collapse: collapse;
+    padding: 10px;
 
-    }
+    margin-bottom: 15px;
 
-    td, th {
+    border-radius: 4px;
+}
 
-        padding: 2px;
+.detalle {
 
-        vertical-align: top;
+    width: 100%;
 
-    }
+    border-collapse: collapse;
 
-    th {
+    margin-top: 15px;
+}
 
-        border-bottom: 1px dashed #000;
+.detalle th {
 
-        padding-bottom: 4px;
+    background: #f2f2f2;
 
-    }
+    border: 1px solid #ccc;
 
-    .right {
+    padding: 8px;
+}
 
-        text-align: right;
+.detalle td {
 
-    }
+    border: 1px solid #ccc;
 
-    .bold {
+    padding: 8px;
+}
 
-        font-weight: bold;
+.right {
 
-    }
+    text-align: right;
+}
 
-    .total-final {
+.totales {
 
-        font-size: 14px;
+    width: 40%;
 
-        font-weight: bold;
+    margin-left: auto;
 
-    }
+    margin-top: 20px;
+}
 
-    @page {
-        margin: 10px;
-    }
+.totales td {
 
-    body {
+    padding: 6px;
+}
 
-        font-family: monospace;
+.total-final {
 
-        font-size: 11px;
+    font-size: 16px;
 
-width: 100%;
-    }
+    font-weight: bold;
 
-    .center {
-        text-align: center;
-    }
+    border-top: 2px solid #000;
+}
 
-    .mb {
-        margin-bottom: 10px;
-    }
+.seccion-titulo {
 
-    table {
-        width: 100%;
-        border-collapse: collapse;
-    }
+    background: #f5f5f5;
 
-    td, th {
-        padding: 3px;
-        vertical-align: top;
-    }
+    padding: 6px;
 
-    .linea {
-        border-top: 1px dashed #000;
-        margin: 5px 0;
-    }
+    font-weight: bold;
+
+    border: 1px solid #ddd;
+
+    margin-top: 15px;
+}
 
 </style>
 
 <body>
 
-    <div class="center mb">
+@if($config->logo)
 
-        <h2>{{ $config->nombre_negocio }}</h2>
+<div class="watermark">
 
+    <img src="{{ public_path('storage/' . $config->logo) }}">
 
-        <p>
-            {{ $config->razon_social }}
-        </p>
+</div>
 
-        <p>
-            {{ $config->direccion }}
-        </p>
+@endif
 
 
-        <p>
-            RTN: {{ $config->rtn }}
-        </p>
- <p>
-            Correo: {{ $config->correo }}
-        </p>
-        
+<table class="header-table">
 
-        <p>
-            Teléfono: {{ $config->telefono }}
-        </p>
+    <tr>
 
-    </div>
-   <h3>FACTURA DE VENTA</h3>
+        <td width="20%">
 
-    <table class="mb">
+            @if($config->logo)
 
-     
+                <img
+                    src="{{ public_path('storage/' . $config->logo) }}"
+                    class="logo">
+
+            @endif
+
+        </td>
+
+        <td width="80%" class="empresa">
+
+            <h2>{{ $config->nombre_negocio }}</h2>
+
+            <p>{{ $config->razon_social }}</p>
+
+            <p>{{ $config->direccion }}</p>
+
+            <p>RTN: {{ $config->rtn }}</p>
+
+            <p>Correo: {{ $config->correo }}</p>
+
+            <p>Teléfono: {{ $config->telefono }}</p>
+
+        </td>
+
+    </tr>
+
+</table>
+
+
+<h2 style="text-align:center; margin-bottom:15px;">
+    FACTURA DE VENTA
+</h2>
+
+
+<div class="box">
+
+    <table width="100%">
+
         <tr>
-    <td><strong>Fecha:</strong></td>
 
-    <td>
-        {{ \Carbon\Carbon::parse($factura->fecha_emision)->format('d/m/Y') }}
-    </td>
-</tr>
+            <td>
+                <strong>Factura:</strong>
+                {{ $factura->numero_factura }}
+            </td>
 
-<tr>
-    <td><strong>Hora:</strong></td>
+            <td>
+                <strong>Serie:</strong>
+                {{ $config->serie }}/{{ substr($factura->numero_factura, -4) }}
+            </td>
 
-    <td>
-        {{ \Carbon\Carbon::parse($factura->fecha_emision)->format('h:i A') }}
-    </td>
-</tr>
-
-
-        <tr>
-            <td><strong>CAI:</strong></td>
-            <td>{{ $factura->cai }}</td>
         </tr>
 
         <tr>
-            <td><strong>Factura:</strong></td>
-            <td>{{ $factura->numero_factura }}</td>
+
+            <td>
+                <strong>Fecha:</strong>
+                {{ \Carbon\Carbon::parse($factura->fecha_emision)->format('d/m/Y') }}
+            </td>
+
+            <td>
+                <strong>Hora:</strong>
+                {{ \Carbon\Carbon::parse($factura->fecha_emision)->format('h:i A') }}
+            </td>
+
         </tr>
 
-         <tr>
-            <td><strong>Serie:</strong></td>
-            <td>{{ $config->serie }}/{{ substr($factura->numero_factura, -4) }}</td>
-        </tr>
         <tr>
-            <td><strong>Fecha límite:</strong></td>
-            <td>{{ $factura->fecha_limite }}</td>
+
+            <td colspan="2">
+
+                <strong>CAI:</strong>
+
+                {{ $factura->cai }}
+
+            </td>
+
+        </tr>
+
+        <tr>
+
+            <td colspan="2">
+
+                <strong>Fecha límite de emisión:</strong>
+
+                {{ $factura->fecha_limite }}
+
+            </td>
+
         </tr>
 
     </table>
 
+</div>
 
-    <table class="mb">
+
+<div class="box">
+
+    <table width="100%">
 
         <tr>
-            <td><strong>Cliente</strong></td>
-            <td>{{ $factura->cliente->nombre }}</td>
+
+            <td width="20%">
+                <strong>Cliente:</strong>
+            </td>
+
+            <td>
+                {{ $factura->cliente->nombre }}
+            </td>
+
         </tr>
 
         <tr>
-            <td><strong>RTN Cliente</strong></td>
-            <td>{{ $factura->cliente->rtn }}</td>
+
+            <td>
+                <strong>RTN:</strong>
+            </td>
+
+            <td>
+                {{ $factura->cliente->rtn }}
+            </td>
+
         </tr>
 
     </table>
 
+</div>
 
-    <table class="mb">
+@php
+
+$entrada = \Carbon\Carbon::parse(
+    $factura->reserva->fecha_entrada
+);
+
+$salida = \Carbon\Carbon::parse(
+    $factura->reserva->fecha_salida
+);
+
+$noches = $entrada->diffInDays($salida);
+
+$subtotalHabitacion = (
+    $noches *
+    $factura->reserva->habitacion->precio
+);
+
+$totalDescuentosHabitacion = DB::table(
+    'reserva_huespedes'
+)
+->where(
+    'reserva_id',
+    $factura->reserva->id
+)
+->sum('descuento_monto');
+
+$totalDescuentoFinal = (
+    $totalDescuentosHabitacion *
+    $noches
+);
+
+$totalHospedaje = (
+    $subtotalHabitacion -
+    $totalDescuentoFinal
+);
+
+@endphp
+
+
+<table class="detalle">
 
     <thead>
 
@@ -231,11 +343,11 @@ width: 100%;
                 Descripción
             </th>
 
-            <th class="right">
-                Cant.
+            <th width="80">
+                Cantidad
             </th>
 
-            <th class="right">
+            <th width="120">
                 Total
             </th>
 
@@ -245,27 +357,28 @@ width: 100%;
 
     <tbody>
 
-        {{-- HOSPEDAJE --}}
-
         <tr>
 
             <td>
+
                 Hospedaje Habitación
+
                 {{ $factura->reserva->habitacion->numero }}
+
             </td>
 
-            <td class="right">
+            <td align="center">
                 1
             </td>
 
-            <td class="right">
-                L. {{ number_format($factura->subtotal, 2) }}
+            <td align="right">
+
+             L. {{ number_format($totalHospedaje, 2) }}
+
             </td>
 
         </tr>
 
-
-        {{-- EXTRAS --}}
 
         @foreach($factura->reserva->extras as $extra)
 
@@ -292,19 +405,26 @@ width: 100%;
         <tr>
 
             <td>
+
                 Extra:
+
                 {{ $extra->nombre }}
+
             </td>
 
-            <td class="right">
+            <td align="center">
+
                 {{ $extra->pivot->cantidad }}
+
             </td>
 
-            <td class="right">
+            <td align="right">
+
                 L. {{ number_format(
                     $totalExtra,
                     2
                 ) }}
+
             </td>
 
         </tr>
@@ -312,14 +432,15 @@ width: 100%;
         @endforeach
 
 
-        {{-- DESCUENTOS --}}
-
         @php
 
             $descuentos = DB::table(
                 'reserva_huespedes'
             )
-            ->where('reserva_id', $factura->reserva->id)
+            ->where(
+                'reserva_id',
+                $factura->reserva->id
+            )
             ->sum('descuento_monto');
 
         @endphp
@@ -335,7 +456,7 @@ width: 100%;
 
             </td>
 
-            <td class="right">
+            <td align="right">
 
                 - L. {{ number_format(
                     $descuentos,
@@ -352,23 +473,26 @@ width: 100%;
 
 </table>
 
-<div class="linea"></div>
 
-<p class="bold">
+<div class="seccion-titulo">
+
     MÉTODOS DE PAGO
-</p>
 
-<table class="mb">
+</div>
+
+<table class="detalle">
 
     @foreach($factura->pagos as $pago)
 
     <tr>
 
         <td>
+
             {{ $pago->formaPago->nombre }}
+
         </td>
 
-        <td class="right">
+        <td align="right">
 
             L. {{ number_format(
                 $pago->monto,
@@ -384,38 +508,76 @@ width: 100%;
 </table>
 
 
-    <table>
+<table class="totales">
 
-        <tr>
-            <td><strong>Subtotal</strong></td>
-            <td>
-                L. {{ number_format($factura->subtotal, 2) }}
-            </td>
-        </tr>
+    <tr>
 
-        <tr>
-            <td><strong>ISV 15%</strong></td>
-            <td>
-                L. {{ number_format($factura->impuesto_15, 2) }}
-            </td>
-        </tr>
+        <td>
+            Subtotal
+        </td>
 
-        <tr>
-            <td><strong>Impuesto Turismo</strong></td>
-            <td>
-                L. {{ number_format($factura->impuesto_turismo, 2) }}
-            </td>
-        </tr>
+        <td align="right">
 
-        <tr>
-            <td><strong>Total</strong></td>
-            <td>
-                L. {{ number_format($factura->total, 2) }}
-            </td>
-        </tr>
+            L. {{ number_format(
+                $factura->subtotal,
+                2
+            ) }}
 
-    </table>
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+            ISV 15%
+        </td>
+
+        <td align="right">
+
+            L. {{ number_format(
+                $factura->impuesto_15,
+                2
+            ) }}
+
+        </td>
+
+    </tr>
+
+    <tr>
+
+        <td>
+            Impuesto Turismo
+        </td>
+
+        <td align="right">
+
+            L. {{ number_format(
+                $factura->impuesto_turismo,
+                2
+            ) }}
+
+        </td>
+
+    </tr>
+
+    <tr class="total-final">
+
+        <td>
+            TOTAL
+        </td>
+
+        <td align="right">
+
+            L. {{ number_format(
+                $factura->total,
+                2
+            ) }}
+
+        </td>
+
+    </tr>
+
+</table>
 
 </body>
-
-</html>

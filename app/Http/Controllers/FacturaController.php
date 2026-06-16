@@ -25,18 +25,10 @@ class FacturaController extends Controller
         ]);
 $pdf = Pdf::loadView(
     'facturas.pdf',
-    compact(
-        'factura',
-        'config'
-    )
+    compact('factura', 'config')
 );
 
-// TAMAÑO TICKET TÉRMICO
-
-$pdf->setPaper(
-    [0, 0, 226.77, 1200],
-    'portrait'
-);
+$pdf->setPaper('letter', 'portrait');
 
 
         return $pdf->stream(
