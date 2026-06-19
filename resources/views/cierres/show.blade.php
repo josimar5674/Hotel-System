@@ -30,7 +30,7 @@
         </div>
 
         <a href="{{ route('cierres.index') }}"
-           class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded">
+           class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
 
             Volver
 

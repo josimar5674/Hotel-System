@@ -25,7 +25,7 @@
 </p>
         </div>
 <a href="{{ route('cierres.create') }}"
-   class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-3 rounded-xl shadow-lg font-medium">
+   class="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-xl shadow-lg font-medium">
     + Nuevo Cierre
 </a>
 
@@ -162,7 +162,7 @@
                                 'cierres.show',
                                 $cierre
                             ) }}"
-                            class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm shadow">
+                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm shadow">
 
                                 Ver
 
