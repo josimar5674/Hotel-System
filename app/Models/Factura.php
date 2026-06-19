@@ -59,10 +59,7 @@ public function usuario()
     );
 }
 
-public function formaPago()
-{
-    return $this->belongsTo(FormaPago::class);
-}
+
 public function pagos()
 {
     return $this->hasMany(Pago::class);

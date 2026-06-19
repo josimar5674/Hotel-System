@@ -40,7 +40,7 @@
                     <h1 id="sidebarTitle"
                         class="text-2xl font-bold tracking-wide">
 
-                        🏨 HOTEL SYSTEM
+                        🏨 La posada de Doña Estefana
 
                     </h1>
 
@@ -132,6 +132,24 @@
 
                             <span class="menu-text">
                                 Habitaciones
+                            </span>
+
+                        </div>
+
+                    </a>
+
+                        <a href="{{ route('cierres.index') }}"
+
+                            class="block px-4 py-2 rounded hover:bg-gray-700 transition">
+
+                        <div class="flex items-center gap-3">
+
+                            <span class="text-xl">
+                                📋
+                            </span>
+
+                            <span class="menu-text">
+                                  Cierres Diarios
                             </span>
 
                         </div>

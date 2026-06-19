@@ -13,6 +13,7 @@ use App\Http\Controllers\FormaPagoController;
 use App\Http\Controllers\ExtraController;
 use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\DescuentoController;
+use App\Http\Controllers\CierreDiarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -265,7 +266,19 @@ Route::get(
 )->name('reservas.registro-huesped');
 
 
+Route::middleware(['auth'])->group(function () {
 
+    Route::resource(
+        'cierres',
+        CierreDiarioController::class
+    )->only([
+        'index',
+        'create',
+        'store',
+        'show'
+    ]);
+
+});
 
 
 require __DIR__.'/auth.php';

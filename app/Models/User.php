@@ -64,4 +64,12 @@ class User extends Authenticatable
 
         ];
     }
+
+    public function cierres()
+{
+    return $this->hasMany(
+        CierreDiario::class,
+        'usuario_id'
+    );
+}
 }
