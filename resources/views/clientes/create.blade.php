@@ -2,11 +2,11 @@
 
     @error('identidad')
 
-        <div class="text-red-500 text-sm mt-1">
+    <div class="text-red-500 text-sm mt-1">
 
-            {{ $message }}
+        {{ $message }}
 
-        </div>
+    </div>
 
     @enderror
 
@@ -27,7 +27,7 @@
         <div class="bg-white shadow rounded-lg p-6">
 
             <form action="{{ route('clientes.store') }}"
-                  method="POST">
+                method="POST">
 
                 @csrf
 
@@ -47,9 +47,9 @@
                         </label>
 
                         <input type="text"
-                               name="nombre"
-                               class="w-full border rounded p-2"
-                               required>
+                            name="nombre"
+                            class="w-full border rounded p-2"
+                            required>
 
                     </div>
 
@@ -65,9 +65,22 @@
                         </label>
 
                         <input type="text"
-                               name="identidad"
-                               class="w-full border rounded p-2">
+                            name="identidad"
+                            class="w-full border rounded p-2">
 
+                    </div>
+
+                    <div>
+                        <label class="block mb-1" for="fecha_vencimiento_documento">
+                            Fecha de vencimiento del documento
+                        </label>
+
+                        <input 
+                            type="date"
+                            name="fecha_vencimiento_documento"
+                            id="fecha_vencimiento_documento"
+                             class="w-full border rounded p-2"
+                            value="{{ old('fecha_vencimiento_documento') }}">
                     </div>
 
 
@@ -82,8 +95,8 @@
                         </label>
 
                         <input type="text"
-                               name="rtn"
-                               class="w-full border rounded p-2">
+                            name="rtn"
+                            class="w-full border rounded p-2">
 
                     </div>
 
@@ -99,8 +112,8 @@
                         </label>
 
                         <input type="text"
-                               name="telefono"
-                               class="w-full border rounded p-2">
+                            name="telefono"
+                            class="w-full border rounded p-2">
 
                     </div>
 
@@ -116,8 +129,8 @@
                         </label>
 
                         <input type="email"
-                               name="correo"
-                               class="w-full border rounded p-2">
+                            name="correo"
+                            class="w-full border rounded p-2">
 
                     </div>
 
@@ -133,7 +146,7 @@
                         </label>
 
                         <select name="genero"
-                                class="w-full border rounded p-2">
+                            class="w-full border rounded p-2">
 
                             <option value="Masculino">
 
@@ -163,18 +176,18 @@
                         </label>
 
                         <select id="pais_procedencia"
-                                class="w-full border rounded p-2">
+                            class="w-full border rounded p-2">
 
                             @foreach($paises as $pais)
 
-                                <option
-                                    value="{{ $pais->nombre }}"
-                                    {{ $pais->nombre == 'Honduras' ? 'selected' : '' }}>
+                            <option
+                                value="{{ $pais->nombre }}"
+                                {{ $pais->nombre == 'Honduras' ? 'selected' : '' }}>
 
-                                    {{ $pais->bandera }}
-                                    {{ $pais->nombre }}
+                                {{ $pais->bandera }}
+                                {{ $pais->nombre }}
 
-                                </option>
+                            </option>
 
                             @endforeach
 
@@ -190,9 +203,9 @@
 
                         {{-- INPUT REAL --}}
                         <input type="hidden"
-                               name="pais_procedencia"
-                               id="pais_hidden"
-                               value="Honduras">
+                            name="pais_procedencia"
+                            id="pais_hidden"
+                            value="Honduras">
 
                     </div>
 
@@ -208,18 +221,18 @@
                         </label>
 
                         <select name="nacionalidad"
-                                class="w-full border rounded p-2">
+                            class="w-full border rounded p-2">
 
                             @foreach($paises as $pais)
 
-                                <option
-                                    value="{{ $pais->nacionalidad }}"
-                                    {{ $pais->nombre == 'Honduras' ? 'selected' : '' }}>
+                            <option
+                                value="{{ $pais->nacionalidad }}"
+                                {{ $pais->nombre == 'Honduras' ? 'selected' : '' }}>
 
-                                    {{ $pais->bandera }}
-                                    {{ $pais->nacionalidad }}
+                                {{ $pais->bandera }}
+                                {{ $pais->nacionalidad }}
 
-                                </option>
+                            </option>
 
                             @endforeach
 
@@ -231,7 +244,7 @@
                     {{-- OTRO PAÍS --}}
 
                     <div id="otroPaisContainer"
-                         class="hidden">
+                        class="hidden">
 
                         <label class="block mb-1">
 
@@ -240,8 +253,8 @@
                         </label>
 
                         <input type="text"
-                               id="otroPais"
-                               class="w-full border rounded p-2">
+                            id="otroPais"
+                            class="w-full border rounded p-2">
 
                     </div>
 
@@ -257,8 +270,8 @@
                         </label>
 
                         <input type="date"
-                               name="fecha_nacimiento"
-                               class="w-full border rounded p-2">
+                            name="fecha_nacimiento"
+                            class="w-full border rounded p-2">
 
                     </div>
 
@@ -275,8 +288,8 @@
                         </label>
 
                         <textarea name="direccion"
-                                  class="w-full border rounded p-2"
-                                  rows="3"></textarea>
+                            class="w-full border rounded p-2"
+                            rows="3"></textarea>
 
                     </div>
 
@@ -288,7 +301,7 @@
                 <div class="mt-6">
 
                     <button type="submit"
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow">
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg shadow">
 
                         Guardar Cliente
 
@@ -303,92 +316,90 @@
     </div>
 
 
-<script>
-
-const paisSelect = document.getElementById(
-    'pais_procedencia'
-);
-
-const otroPaisContainer = document.getElementById(
-    'otroPaisContainer'
-);
-
-const otroPaisInput = document.getElementById(
-    'otroPais'
-);
-
-const paisHidden = document.getElementById(
-    'pais_hidden'
-);
-
-
-// ACTUALIZAR
-
-function actualizarPais() {
-
-    const opcion =
-        paisSelect.options[
-            paisSelect.selectedIndex
-        ];
-
-
-    // SI ES OTRO
-
-    if(opcion.value === 'OTRO') {
-
-        otroPaisContainer.classList.remove(
-            'hidden'
+    <script>
+        const paisSelect = document.getElementById(
+            'pais_procedencia'
         );
 
-        paisHidden.value = '';
+        const otroPaisContainer = document.getElementById(
+            'otroPaisContainer'
+        );
 
-        return;
-    }
+        const otroPaisInput = document.getElementById(
+            'otroPais'
+        );
 
-
-    // OCULTAR
-
-    otroPaisContainer.classList.add(
-        'hidden'
-    );
-
-
-    // GUARDAR VALOR
-
-    paisHidden.value =
-        opcion.value;
-
-}
+        const paisHidden = document.getElementById(
+            'pais_hidden'
+        );
 
 
-// CAMBIO
+        // ACTUALIZAR
 
-paisSelect.addEventListener(
-    'change',
-    actualizarPais
-);
+        function actualizarPais() {
 
-
-// ESCRIBIR OTRO
-
-otroPaisInput.addEventListener(
-    'input',
-    () => {
-
-        paisHidden.value =
-            otroPaisInput.value;
-
-    }
-);
+            const opcion =
+                paisSelect.options[
+                    paisSelect.selectedIndex
+                ];
 
 
-// CARGA INICIAL
+            // SI ES OTRO
 
-window.addEventListener(
-    'load',
-    actualizarPais
-);
+            if (opcion.value === 'OTRO') {
 
-</script>
+                otroPaisContainer.classList.remove(
+                    'hidden'
+                );
+
+                paisHidden.value = '';
+
+                return;
+            }
+
+
+            // OCULTAR
+
+            otroPaisContainer.classList.add(
+                'hidden'
+            );
+
+
+            // GUARDAR VALOR
+
+            paisHidden.value =
+                opcion.value;
+
+        }
+
+
+        // CAMBIO
+
+        paisSelect.addEventListener(
+            'change',
+            actualizarPais
+        );
+
+
+        // ESCRIBIR OTRO
+
+        otroPaisInput.addEventListener(
+            'input',
+            () => {
+
+                paisHidden.value =
+                    otroPaisInput.value;
+
+            }
+        );
+
+
+        // CARGA INICIAL
+
+        window.addEventListener(
+            'load',
+            actualizarPais
+        );
+    </script>
 
 </x-app-layout>

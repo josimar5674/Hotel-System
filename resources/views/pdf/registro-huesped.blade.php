@@ -56,6 +56,17 @@
         .page-break{
             page-break-after: always;
         }
+.col-2 {
+    width: 48%;
+    float: left;
+    margin-right: 2%;
+    margin-bottom: 8px;
+}
+
+.clear {
+    clear: both;
+}
+        
 
     </style>
 
@@ -164,89 +175,73 @@
     </div>
 
 
-    {{-- DATOS VIAJERO --}}
+   <div class="box">
 
-    <div class="box">
-
-        <div class="section-title">
-
-            Datos Viajero
-
-        </div>
-
-        <div class="line">
-
-            <strong>ID / Pasaporte:</strong>
-
-            {{ $huesped->identidad }}
-
-        </div>
-
-        <div class="line">
-
-            <strong>Nombre:</strong>
-
-            {{ $huesped->nombre }}
-
-        </div>
-        <div class="line">
-
-    <strong>Teléfono:</strong>
-
-    {{ $huesped->telefono ?? 'N/A' }}
-
-</div>
-
-<div class="line">
-
-    <strong>Correo Electrónico:</strong>
-
-    {{ $huesped->correo ?? 'N/A' }}
-
-</div>
-
-<div class="line">
-
-    <strong>Dirección:</strong>
-
-    {{ $huesped->direccion ?? 'N/A' }}
-
-</div>
-
-        <div class="line">
-
-            <strong>Nacionalidad:</strong>
-
-            {{ $huesped->nacionalidad }}
-
-        </div>
-
-        <div class="line">
-
-            <strong>País Procedencia:</strong>
-
-            {{ $huesped->pais_procedencia }}
-
-        </div>
-
-        <div class="line">
-
-            <strong>Género:</strong>
-
-            {{ $huesped->genero }}
-
-        </div>
-
-        <div class="line">
-
-            <strong>Fecha Nacimiento:</strong>
-
-            {{ $huesped->fecha_nacimiento }}
-
-        </div>
-
+    <div class="section-title">
+        Datos Viajero
     </div>
 
+    <div class="col-2">
+        <strong>ID / Pasaporte:</strong><br>
+        {{ $huesped->identidad }}
+    </div>
+
+    <div class="col-2">
+        <strong>Fecha de vencimiento documento:</strong><br>
+        {{ $huesped->fecha_vencimiento_documento ?? 'N/A' }}
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="col-2">
+        <strong>Nombre:</strong><br>
+        {{ $huesped->nombre }}
+    </div>
+
+    <div class="col-2">
+        <strong>Teléfono:</strong><br>
+        {{ $huesped->telefono ?? 'N/A' }}
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="col-2">
+        <strong>Correo:</strong><br>
+        {{ $huesped->correo ?? 'N/A' }}
+    </div>
+
+    <div class="col-2">
+        <strong>Dirección:</strong><br>
+        {{ $huesped->direccion ?? 'N/A' }}
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="col-2">
+        <strong>Nacionalidad:</strong><br>
+        {{ $huesped->nacionalidad }}
+    </div>
+
+    <div class="col-2">
+        <strong>País Procedencia:</strong><br>
+        {{ $huesped->pais_procedencia }}
+    </div>
+
+    <div class="clear"></div>
+
+    <div class="col-2">
+        <strong>Género:</strong><br>
+        {{ $huesped->genero }}
+    </div>
+
+    <div class="col-2">
+        <strong>Fecha Nacimiento:</strong><br>
+        {{ $huesped->fecha_nacimiento }}
+    </div>
+
+    <div class="clear"></div>
+
+</div>
 
     {{-- DATOS ESTANCIA --}}
 

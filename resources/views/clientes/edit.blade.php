@@ -73,6 +73,20 @@
 
                     </div>
 
+                       <div>
+                        <label class="block mb-1" for="fecha_vencimiento_documento">
+                            Fecha de vencimiento del documento
+                        </label>
+
+                        <input 
+                            type="date"
+                            name="fecha_vencimiento_documento"
+                            id="fecha_vencimiento_documento"
+                             class="w-full border rounded p-2"
+                               value="{{ old('fecha_vencimiento_documento', $cliente->fecha_vencimiento_documento) }}">             
+                        
+                        </div>
+
 
                     {{-- RTN --}}
 
@@ -88,6 +102,8 @@
                                class="w-full border rounded p-2">
 
                     </div>
+
+
 
 
                     {{-- TELÉFONO --}}

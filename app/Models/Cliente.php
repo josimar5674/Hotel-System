@@ -20,6 +20,7 @@ protected $fillable = [
     'pais_procedencia',
     'genero',
     'fecha_nacimiento',
+    'fecha_vencimiento_documento',
 
 ];
 }

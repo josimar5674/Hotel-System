@@ -94,6 +94,8 @@ public function store(Request $request)
 
         'fecha_nacimiento' => $request->fecha_nacimiento,
 
+        'fecha_vencimiento_documento' => $request->fecha_vencimiento_documento,
+
     ]);
 
 
@@ -193,6 +195,8 @@ $cliente->update([
     'genero' => $request->genero,
 
     'fecha_nacimiento' => $request->fecha_nacimiento,
+    
+    'fecha_vencimiento_documento' => $request->fecha_vencimiento_documento,
 
 ]);
 
