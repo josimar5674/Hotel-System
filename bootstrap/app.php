@@ -22,11 +22,13 @@ return Application::configure(
     Middleware $middleware
 ): void {
 
-    $middleware->alias([
+  $middleware->alias([
 
-        'admin' => \App\Http\Middleware\AdminMiddleware::class,
+    'admin' => \App\Http\Middleware\AdminMiddleware::class,
 
-    ]);
+    'superadmin' => \App\Http\Middleware\SuperAdminMiddleware::class,
+
+]);
 
 })
 

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css' rel='stylesheet' />
+
 <head>
 
     <meta charset="utf-8">
@@ -28,8 +30,8 @@
 
         <!-- SIDEBAR -->
 
-    <aside id="sidebar"
-       class="w-64 h-screen sticky top-0 transition-all duration-300 bg-gray-900 text-white flex flex-col">
+        <aside id="sidebar"
+               class="w-64 h-screen sticky top-0 transition-all duration-300 bg-gray-900 text-white flex flex-col">
 
             <!-- LOGO -->
 
@@ -64,24 +66,25 @@
                     $user = auth()->user();
                 @endphp
 
+
                 <!-- CLIENTES -->
 
-<a href="{{ route('clientes.index') }}"
-   class="block px-4 py-2 rounded hover:bg-gray-700 transition">
+                <a href="{{ route('clientes.index') }}"
+                   class="block px-4 py-2 rounded hover:bg-gray-700 transition">
 
-    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3">
 
-        <span class="text-xl">
-            👥
-        </span>
+                        <span class="text-xl">
+                            👥
+                        </span>
 
-        <span class="menu-text">
-            Clientes
-        </span>
+                        <span class="menu-text">
+                            Clientes
+                        </span>
 
-    </div>
+                    </div>
 
-</a>
+                </a>
 
 
                 <!-- RESERVAS -->
@@ -104,9 +107,9 @@
                 </a>
 
 
-                <!-- ADMIN -->
+                <!-- ADMINISTRACIÓN -->
 
-                @if($user->role == 'admin')
+                @if(in_array($user->role, ['admin', 'superadmin']))
 
                     <hr class="border-gray-700 my-4">
 
@@ -138,9 +141,11 @@
 
                     </a>
 
-                        <a href="{{ route('cierres.index') }}"
 
-                            class="block px-4 py-2 rounded hover:bg-gray-700 transition">
+                    <!-- CIERRES DIARIOS -->
+
+                    <a href="{{ route('cierres.index') }}"
+                       class="block px-4 py-2 rounded hover:bg-gray-700 transition">
 
                         <div class="flex items-center gap-3">
 
@@ -149,7 +154,7 @@
                             </span>
 
                             <span class="menu-text">
-                                  Cierres Diarios
+                                Cierres Diarios
                             </span>
 
                         </div>
@@ -157,7 +162,7 @@
                     </a>
 
 
-                    <!-- CONFIGURACIONES -->
+                    <!-- CONFIGURACIÓN -->
 
                     <a href="{{ route('configuracion-fiscal.edit') }}"
                        class="block px-4 py-2 rounded hover:bg-gray-700 transition">
@@ -179,7 +184,7 @@
 
                     <!-- USUARIOS -->
 
-                   <a href="{{ route('usuarios.index') }}"
+                    <a href="{{ route('usuarios.index') }}"
                        class="block px-4 py-2 rounded hover:bg-gray-700 transition">
 
                         <div class="flex items-center gap-3">
@@ -196,10 +201,26 @@
 
                     </a>
 
+                @endif
 
-                    <!-- REPORTES -->
 
-                    <a href="#"
+                <!-- REPORTES -->
+                <!-- SOLO SUPERADMIN -->
+
+                @if($user->role === 'superadmin')
+
+                    <hr class="border-gray-700 my-4">
+
+                    <p class="text-xs uppercase text-gray-400 px-4">
+
+                        <span class="menu-text">
+                            Supervisión
+                        </span>
+
+                    </p>
+
+
+                    <a href="{{ route('reportes.contable') }}"
                        class="block px-4 py-2 rounded hover:bg-gray-700 transition">
 
                         <div class="flex items-center gap-3">
@@ -261,7 +282,7 @@
 
         <!-- CONTENIDO -->
 
-  <main class="flex-1 h-screen overflow-y-auto p-6">
+        <main class="flex-1 h-screen overflow-y-auto p-6">
 
             @if (isset($header))
 
@@ -282,60 +303,63 @@
 
     <script>
 
-    function toggleSidebar()
-    {
-        const sidebar = document.getElementById(
-            'sidebar'
-        );
+        function toggleSidebar()
+        {
+            const sidebar = document.getElementById(
+                'sidebar'
+            );
 
-        const title = document.getElementById(
-            'sidebarTitle'
-        );
+            const title = document.getElementById(
+                'sidebarTitle'
+            );
 
-        const texts = document.querySelectorAll(
-            '.menu-text'
-        );
+            const texts = document.querySelectorAll(
+                '.menu-text'
+            );
 
 
-        // COLAPSAR
+            // COLAPSAR
 
-        if(sidebar.classList.contains('w-64')) {
+            if(sidebar.classList.contains('w-64')) {
 
-            sidebar.classList.remove('w-64');
+                sidebar.classList.remove('w-64');
 
-            sidebar.classList.add('w-20');
+                sidebar.classList.add('w-20');
 
-            title.classList.add('hidden');
+                title.classList.add('hidden');
 
-            texts.forEach(text => {
+                texts.forEach(text => {
 
-                text.classList.add('hidden');
+                    text.classList.add('hidden');
 
-            });
+                });
+
+            }
+
+            // EXPANDIR
+
+            else {
+
+                sidebar.classList.remove('w-20');
+
+                sidebar.classList.add('w-64');
+
+                title.classList.remove('hidden');
+
+                texts.forEach(text => {
+
+                    text.classList.remove('hidden');
+
+                });
+
+            }
 
         }
-
-        // EXPANDIR
-
-        else {
-
-            sidebar.classList.remove('w-20');
-
-            sidebar.classList.add('w-64');
-
-            title.classList.remove('hidden');
-
-            texts.forEach(text => {
-
-                text.classList.remove('hidden');
-
-            });
-
-        }
-    }
 
     </script>
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+
 </body>
 
 </html>

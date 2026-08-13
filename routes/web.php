@@ -15,6 +15,10 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\DescuentoController;
 use App\Http\Controllers\CierreDiarioController;
 
+use App\Exports\ReporteContableExport;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Http\Controllers\ReporteContableController;
+
 /*
 |--------------------------------------------------------------------------
 | ROOT
@@ -277,6 +281,27 @@ Route::middleware(['auth'])->group(function () {
         'store',
         'show'
     ]);
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | REPORTES
+    |--------------------------------------------------------------------------
+    */
+
+ Route::get(
+    '/reportes/contable',
+    [ReporteContableController::class, 'index']
+)
+->middleware('superadmin')
+->name('reportes.contable');
+
+Route::get(
+    '/reportes/contable/excel',
+    [ReporteContableController::class, 'exportExcel']
+)
+->middleware('superadmin')
+->name('reportes.contable.excel');
 
 });
 

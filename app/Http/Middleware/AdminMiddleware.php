@@ -13,10 +13,10 @@ class AdminMiddleware
         Closure $next
     ): Response
     {
-        if(auth()->user()->role != 'admin') {
+      if(!in_array(auth()->user()->role, ['admin', 'superadmin'])) {
 
-            abort(403);
-        }
+    abort(403);
+}
 
         return $next($request);
     }
