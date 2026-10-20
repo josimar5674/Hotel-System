@@ -14,7 +14,7 @@
           content="{{ csrf_token() }}">
 
     <title>
-        {{ config('app.name', 'Laravel') }}
+        {{ config('app.name', 'Posada Doña Estefana') }}
     </title>
 
     @vite([

@@ -24,6 +24,8 @@ class ConfiguracionFiscal extends Model
 
         'cai',
 
+        'rango_autorizado',
+
         'factura_inicio',
 
         'factura_fin',

@@ -91,6 +91,24 @@
                     </div>
 
                     <div>
+                        <label>Rango autorizado</label>
+
+                        <input
+                            type="text"
+                            name="rango_autorizado"
+                            value="{{ old('rango_autorizado', $config->rango_autorizado) }}"
+                            placeholder="000-001-01-00000001/90000000"
+                            class="w-full border rounded p-2"
+                        >
+
+                        @error('rango_autorizado')
+                            <p class="text-red-500 text-sm mt-1">
+                                {{ $message }}
+                            </p>
+                        @enderror
+                    </div>
+
+                    <div>
                         <label>Serie</label>
 
                         <input type="text"

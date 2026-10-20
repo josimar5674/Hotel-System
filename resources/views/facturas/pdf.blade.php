@@ -257,6 +257,13 @@ body {
 
         </tr>
 
+        <tr>
+            <td colspan="2">
+                <strong>RANGO AUTORIZADO:</strong>
+                {{ $config->rango_autorizado }}
+            </td>
+        </tr>
+
     </table>
 
 </div>

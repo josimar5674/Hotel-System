@@ -21,8 +21,10 @@ class Factura extends Model
 
         'cai',
 
-        'fecha_limite',
+        'rango_autorizado',
 
+        'fecha_limite',
+        
         'subtotal',
 
         'impuesto_15',
