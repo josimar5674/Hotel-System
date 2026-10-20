@@ -45,8 +45,8 @@
                     rgba(12, 18, 28, 0.45),
                     rgba(12, 18, 28, 0.60)
                 ),
-                url('/images/hotel-login.jpg');
-            background-size: cover;
+            url('{{ asset('images/hotel-login.jpg') }}');
+                        background-size: cover;
             background-position: center;
             background-repeat: no-repeat;
         }
