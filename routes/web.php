@@ -18,6 +18,7 @@ use App\Http\Controllers\CierreDiarioController;
 use App\Exports\ReporteContableExport;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Http\Controllers\ReporteContableController;
+use App\Http\Controllers\AnulacionFacturaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -303,7 +304,26 @@ Route::get(
 ->middleware('superadmin')
 ->name('reportes.contable.excel');
 
+
+/*
+|--------------------------------------------------------------------------
+| ADMINISTRACIÓN DE FACTURAS
+|--------------------------------------------------------------------------
+*/
+
+Route::post(
+    '/facturas/{factura}/anular',
+    [AnulacionFacturaController::class, 'anular']
+)->name('facturas.anular');
+
+Route::post(
+    '/facturas/{factura}/autorizar-reutilizacion',
+    [AnulacionFacturaController::class, 'autorizarReutilizacion']
+)->name('facturas.autorizar-reutilizacion');
+
 });
+
+
 
 
 require __DIR__.'/auth.php';

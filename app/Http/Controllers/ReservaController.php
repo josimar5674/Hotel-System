@@ -1092,284 +1092,377 @@ public function update(Request $request, Reserva $reserva)
     }
 
 
-    public function checkout(Reserva $reserva)
-    {
+public function checkout(Reserva $reserva)
+{
+    $reserva->load('extras', 'habitacion');
 
-        $reserva->load('extras');
+    // Validar que la reserva esté en check-in.
+    if ($reserva->estado != 'checkin') {
+        return back()->with(
+            'error',
+            'La reserva no está en check-in'
+        );
+    }
 
-        // Validar
+    DB::transaction(function () use ($reserva) {
 
-        if ($reserva->estado != 'checkin') {
+        /*
+        |--------------------------------------------------------------------------
+        | 1. Bloquear configuración fiscal
+        |--------------------------------------------------------------------------
+        */
 
-            return back()->with(
-                'error',
-                'La reserva no está en check-in'
+        $config = ConfiguracionFiscal::lockForUpdate()->first();
+
+        if (!$config) {
+            abort(500, 'No existe una configuración fiscal.');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 2. Validar vencimiento del CAI
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            Carbon::parse($config->fecha_limite)
+                ->endOfDay()
+                ->isPast()
+        ) {
+            abort(500, 'El CAI está vencido');
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 3. Buscar número de factura anulada disponible
+        |--------------------------------------------------------------------------
+        |
+        | Se busca una factura anulada del mismo CAI cuyo número todavía
+        | no haya sido utilizado por una factura emitida.
+        |
+        | La factura anulada original no se modifica.
+        |
+        */
+
+        $facturaAnulada = Factura::query()
+            ->where('estado', 'anulada')
+            ->where('cai', $config->cai)
+            ->whereNotExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('facturas as factura_emitida')
+                    ->whereColumn(
+                        'factura_emitida.numero_factura',
+                        'facturas.numero_factura'
+                    )
+                    ->whereColumn(
+                        'factura_emitida.cai',
+                        'facturas.cai'
+                    )
+                    ->where('factura_emitida.estado', 'emitida');
+            })
+            ->orderBy('numero_factura', 'asc')
+            ->lockForUpdate()
+            ->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | 4. Seleccionar número de factura
+        |--------------------------------------------------------------------------
+        */
+
+        if ($facturaAnulada) {
+
+            // Reutilizar el número anulado disponible.
+            $numeroFactura = $facturaAnulada->numero_factura;
+
+            // No avanzar el correlativo normal.
+            $reutilizandoNumero = true;
+
+        } else {
+
+            // No quedan números anulados disponibles.
+            $numeroFactura = $config->siguiente_numero;
+
+            $reutilizandoNumero = false;
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | 5. Comprobar que el número no esté emitido
+        |--------------------------------------------------------------------------
+        */
+
+        $numeroYaEmitido = Factura::query()
+            ->where('numero_factura', $numeroFactura)
+            ->where('cai', $config->cai)
+            ->where('estado', 'emitida')
+            ->exists();
+
+        if ($numeroYaEmitido) {
+            abort(
+                500,
+                'El número de factura seleccionado ya está emitido. No se puede continuar.'
             );
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 6. Calcular noches
+        |--------------------------------------------------------------------------
+        */
 
-        DB::transaction(function () use ($reserva) {
+        $entrada = Carbon::parse($reserva->fecha_entrada);
+        $salida = Carbon::parse($reserva->fecha_salida);
 
-            // Configuración fiscal
+        $noches = $entrada->diffInDays($salida);
 
-            $config = ConfiguracionFiscal::lockForUpdate()->first();
+        /*
+        |--------------------------------------------------------------------------
+        | 7. Calcular subtotal de habitación
+        |--------------------------------------------------------------------------
+        */
 
+        $subtotalHabitacion = (
+            $noches * $reserva->habitacion->precio
+        );
 
-            // Validar fecha límite CAI
+        /*
+        |--------------------------------------------------------------------------
+        | 8. Calcular descuentos de habitación
+        |--------------------------------------------------------------------------
+        */
 
-            if (
+        $totalDescuentosHabitacion = DB::table('reserva_huespedes')
+            ->where('reserva_id', $reserva->id)
+            ->sum('descuento_monto');
 
-                Carbon::parse($config->fecha_limite)
+        $totalDescuentoFinal = (
+            $totalDescuentosHabitacion * $noches
+        );
 
-                ->endOfDay()
+        $subtotal = (
+            $subtotalHabitacion - $totalDescuentoFinal
+        );
 
-                ->isPast()
+        /*
+        |--------------------------------------------------------------------------
+        | 9. Calcular extras
+        |--------------------------------------------------------------------------
+        */
 
-            ) {
-                abort(500, 'El CAI está vencido');
+        $totalExtras = 0;
+
+        foreach ($reserva->extras as $extra) {
+
+            $subtotalExtra = (
+                $extra->pivot->cantidad *
+                $extra->pivot->precio
+            );
+
+            $descuentoExtra = (
+                $extra->pivot->descuento_monto ?? 0
+            ) * $extra->pivot->cantidad;
+
+            $totalExtra = (
+                $subtotalExtra - $descuentoExtra
+            );
+
+            $totalExtras += $totalExtra;
+        }
+
+        $subtotal += $totalExtras;
+
+        /*
+        |--------------------------------------------------------------------------
+        | 10. Calcular impuestos
+        |--------------------------------------------------------------------------
+        */
+
+        $impuesto15 = $subtotal * (
+            $config->impuesto_15 / 100
+        );
+
+        $impuestoTurismo = $subtotal * (
+            $config->impuesto_turismo / 100
+        );
+
+        $totalImpuestos = (
+            $impuesto15 + $impuestoTurismo
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 11. Calcular total
+        |--------------------------------------------------------------------------
+        */
+
+        $total = (
+            $subtotal + $totalImpuestos
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | 12. Validar pagos
+        |--------------------------------------------------------------------------
+        */
+
+        $montos = request()->input('monto', []);
+        $formasPago = request()->input('forma_pago_id', []);
+
+        if (
+            !is_array($montos) ||
+            !is_array($formasPago) ||
+            count($montos) === 0 ||
+            count($montos) !== count($formasPago)
+        ) {
+            abort(422, 'Debes indicar correctamente las formas de pago y sus montos.');
+        }
+
+        foreach ($montos as $monto) {
+            if (!is_numeric($monto) || (float) $monto < 0) {
+                abort(422, 'Hay un monto de pago inválido.');
             }
+        }
 
+        $totalPagos = collect($montos)->sum(
+            fn ($monto) => (float) $monto
+        );
 
-            // Tomar correlativo actual
-
-            $numeroFactura = $config->siguiente_numero;
-
-
-            // Calcular noches
-
-            $entrada = Carbon::parse($reserva->fecha_entrada);
-
-            $salida = Carbon::parse($reserva->fecha_salida);
-
-            $noches = $entrada->diffInDays($salida);
-
-
-
-            // Calcular subtotal
-
-
-            // SUBTOTAL HABITACIÓN
-
-            $subtotalHabitacion = (
-                $noches *
-                $reserva->habitacion->precio
+        if (abs($totalPagos - $total) > 0.01) {
+            abort(
+                422,
+                'La suma de pagos no coincide con el total de la factura.'
             );
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 13. Crear nueva factura
+        |--------------------------------------------------------------------------
+        |
+        | Se crea un registro nuevo. La factura anulada original se conserva
+        | con su número, estado, fecha y motivo de anulación.
+        |
+        */
 
-            // DESCUENTOS HABITACIÓN
+        $factura = Factura::create([
 
-            $totalDescuentosHabitacion = DB::table(
-                'reserva_huespedes'
-            )
-                ->where('reserva_id', $reserva->id)
-                ->sum('descuento_monto');
+            'reserva_id' => $reserva->id,
 
+            'cliente_id' => $reserva->cliente_id,
 
-            // TOTAL DESCUENTO
+            'usuario_id' => Auth::id(),
 
-            $totalDescuentoFinal = (
-                $totalDescuentosHabitacion *
-                $noches
-            );
+            'numero_factura' => $numeroFactura,
 
+            'cai' => $config->cai,
 
-// SUBTOTAL FINAL
-// YA CON DESCUENTO
+            'fecha_limite' => $config->fecha_limite,
 
-$subtotal = (
-    $subtotalHabitacion -
-    $totalDescuentoFinal
-);
+            'subtotal' => $subtotal,
 
-            // Extras
+            'impuesto_15' => $impuesto15,
 
+            'impuesto_18' => 0,
 
-            // Extras
+            'impuesto_turismo' => $impuestoTurismo,
 
-            $totalExtras = 0;
+            'total_impuestos' => $totalImpuestos,
 
-            foreach ($reserva->extras as $extra) {
+            'total' => $total,
 
-                $subtotalExtra = (
+            'estado' => 'emitida',
 
-                    $extra->pivot->cantidad *
+            'fecha_emision' => now(),
 
-                    $extra->pivot->precio
+        ]);
 
-                );
+        /*
+        |--------------------------------------------------------------------------
+        | 14. Registrar pagos
+        |--------------------------------------------------------------------------
+        */
 
-                $descuentoExtra = (
+        foreach ($formasPago as $index => $formaPagoId) {
 
-                    $extra->pivot->descuento_monto ?? 0
+            Pago::create([
 
-                ) * $extra->pivot->cantidad;
+                'factura_id' => $factura->id,
 
-                $totalExtra = (
-                    $subtotalExtra -
-                    $descuentoExtra
-                );
+                'forma_pago_id' => $formaPagoId,
 
-                $totalExtras += $totalExtra;
-            }
-
-
-            // Subtotal general
-
-            $subtotal += $totalExtras;
-
-
-            // Impuestos
-
-            $impuesto15 = $subtotal * (
-                $config->impuesto_15 / 100
-            );
-
-            $impuestoTurismo = $subtotal * (
-                $config->impuesto_turismo / 100
-            );
-
-
-            $totalImpuestos = (
-                $impuesto15 +
-                $impuestoTurismo
-            );
-
-// TOTAL CON IMPUESTOS
-// TOTAL FINAL
-
-$total = (
-    $subtotal +
-    $totalImpuestos
-);
-
-            $totalPagos = collect(
-                request('monto')
-            )->sum();
-
-            if (abs($totalPagos - $total) > 0.01) {
-
-                abort(500, 'La suma de pagos no coincide con el total');
-            }
-
-            // Crear factura
-
-            $factura = Factura::create([
-
-
-
-                'reserva_id' => $reserva->id,
-
-                'cliente_id' => $reserva->cliente_id,
-
-                'usuario_id' => Auth::id(),
-
-                'numero_factura' => $numeroFactura,
-
-                'cai' => $config->cai,
-
-                'fecha_limite' => $config->fecha_limite,
-
-                'subtotal' => $subtotal,
-
-                'impuesto_15' => $impuesto15,
-
-                'impuesto_18' => 0,
-
-                'impuesto_turismo' => $impuestoTurismo,
-
-                'total_impuestos' => $totalImpuestos,
-
-                'total' => $total,
-
-                'estado' => 'emitida',
-
-                'fecha_emision' => now(),
+                'monto' => (float) $montos[$index],
 
             ]);
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 15. Avanzar correlativo únicamente si corresponde
+        |--------------------------------------------------------------------------
+        |
+        | Si reutilizamos un número anulado, el correlativo normal no cambia.
+        | Cuando ya no haya números anulados disponibles, el correlativo
+        | continuará avanzando normalmente.
+        |
+        */
 
-            foreach (request('forma_pago_id') as $index => $formaPagoId) {
-
-                Pago::create([
-
-                    'factura_id' => $factura->id,
-
-                    'forma_pago_id' => $formaPagoId,
-
-                    'monto' => request('monto')[$index]
-
-                ]);
-            }
-
-            // Incrementar correlativo
-
-            // Separar partes
+        if (!$reutilizandoNumero) {
 
             $partes = explode('-', $config->siguiente_numero);
 
+            $indiceUltimaParte = count($partes) - 1;
 
-            // Última parte numérica
-
-            $correlativo = (int) end($partes);
-
-
-            // Incrementar
+            $correlativo = (int) $partes[$indiceUltimaParte];
 
             $correlativo++;
 
-
-            // Mantener ceros
-
-            $partes[count($partes) - 1] = str_pad(
+            $partes[$indiceUltimaParte] = str_pad(
                 $correlativo,
                 8,
                 '0',
                 STR_PAD_LEFT
             );
 
-
-            // Reconstruir número
-
             $nuevoNumero = implode('-', $partes);
 
-
-            // Guardar
-
             $config->update([
-
-                'siguiente_numero' => $nuevoNumero
-
+                'siguiente_numero' => $nuevoNumero,
             ]);
+        }
 
+        /*
+        |--------------------------------------------------------------------------
+        | 16. Actualizar reserva
+        |--------------------------------------------------------------------------
+        */
 
-            // Actualizar reserva
+        $reserva->update([
 
-            $reserva->update([
+            'estado' => 'checkout',
 
-                'estado' => 'checkout',
+            'fecha_checkout' => now(),
 
-                'fecha_checkout' => now(),
+            'usuario_checkout_id' => Auth::id(),
 
-                'usuario_checkout_id' => Auth::id()
+        ]);
 
-            ]);
+        /*
+        |--------------------------------------------------------------------------
+        | 17. Liberar habitación
+        |--------------------------------------------------------------------------
+        */
 
+        $reserva->habitacion->update([
+            'estado' => 'disponible',
+        ]);
+    });
 
-            // Liberar habitación
-
-            $reserva->habitacion->update([
-
-                'estado' => 'disponible'
-
-            ]);
-        });
-
-
-        return back()->with(
-            'success',
-            'Check-Out y factura generada correctamente'
-        );
-    }
+    return back()->with(
+        'success',
+        'Check-Out y factura generada correctamente'
+    );
+}
 
 
 
